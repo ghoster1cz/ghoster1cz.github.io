@@ -119,7 +119,6 @@ function draw_bass(){
 
 function draw_snares(){
     let sum = 0;
-    let blur = 50;
     let snare_radius = snare_radius_min;
 
     for (let freq = 9000; freq < 10000; freq++){
@@ -134,29 +133,23 @@ function draw_snares(){
     }
 
     sum = Math.floor(((sum - snare_min_sum)/(snare_max_sum-snare_min_sum))*255);
-    blur -= Math.floor(((snare_radius - snare_radius_min)/(snare_radius_max - snare_radius_min))*40);
 
-    b_ctx.filter = "blur("+blur+"px)";
+    b_ctx.filter = "blur(50px)";
     b_ctx.fillStyle = "rgb("+sum+", "+sum+", "+sum+")";
 
-    b_ctx.beginPath();
-    b_ctx.arc(0, 0, snare_radius, 0, Math.PI*2);
-    b_ctx.fill();
+    sum /= 5
 
-    b_ctx.beginPath();
-    b_ctx.arc(window_width, 0, snare_radius, 0, Math.PI*2);
-    b_ctx.fill();
+    b_ctx.fillRect(0, 0, window_width, sum)
+    b_ctx.fillRect(0, 0, sum, window_height)
+    b_ctx.fillRect(0, window_height-sum, window_width, sum)
+    b_ctx.fillRect(window_width-sum, 0, sum, window_height)
 
-    b_ctx.beginPath();
-    b_ctx.arc(window_width, window_height, snare_radius, 0, Math.PI*2);
-    b_ctx.fill();
 
-    b_ctx.beginPath();
-    b_ctx.arc(0, window_height, snare_radius, 0, Math.PI*2);
-    b_ctx.fill();
 }
 
 function draw_low_mid(){
+    b_ctx.filter = "blur(0px)";
+
     for (let i = 0; i < 8; i++) {
         let sum = 0;
         let blur = 10;
@@ -182,7 +175,6 @@ function draw_low_mid(){
 
         red = (sum/25*i)*i
 
-        b_ctx.filter = "blur(0px)";
         b_ctx.strokeStyle = "rgb("+red+", 0, "+sum+")";
 
         last_width = Math.floor(sum/10)
