@@ -81,7 +81,7 @@ function draw(){
     draw_bass();
     draw_snares();
     draw_low_mid();
-    //draw_bars();
+    draw_bars();
 
     requestAnimationFrame(draw);
 }
