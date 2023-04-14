@@ -18,8 +18,6 @@ export class AudioAnalyzer {
     }
 
     setup_audio() {
-        console.log(this)
-        console.log(this.audio_input);
         let file = this.audio_input.files[0];
         this.audio.src = URL.createObjectURL(file);
         this.audio_input.hidden = true;
@@ -34,6 +32,7 @@ export class AudioAnalyzer {
 
         this.audio_analyzer.fftSize = 32768;
         this.data_array = new Uint8Array(this.audio_analyzer.frequencyBinCount);
+        this.audio_analyzer.getByteTimeDomainData(this.data_array);
     }
 
     get_audio_data() {
@@ -45,13 +44,31 @@ export class AudioAnalyzer {
         }
     }
 
-    get_sum_between_range(min_freq, max_freq) {
+    get_true_sum_between_range(min_freq, max_freq) {
         let data = this.get_audio_data();
         if(data !== undefined) {
-            data.slice(min_freq, max_freq);
+            data = data.slice(min_freq, max_freq);
             let sum = data.reduce((partial, a) => partial + a, 0)
 
-            sum /= 1000
+            sum /= (max_freq - min_freq)
+            return sum;
+        }
+
+        return data;
+    }
+
+    get_altered_sum_between_range(min_freq, max_freq) {
+        let data = this.get_audio_data();
+        if(data !== undefined) {
+            data = data.slice(min_freq, max_freq).filter((value, i, j) => {return value !== 0});
+            let sum = data.reduce((partial, a) => partial + a, 0)
+
+            if(data.length !== 0) {
+                sum /= data.length;
+                sum += (50 * (sum / 255))
+            } else {
+                sum = 0;
+            }
             return sum;
         }
 

@@ -1,5 +1,7 @@
 import {getAudioAnalyzer} from "./audio.js";
 
+var fps_temp = Date.now()
+
 // Vao with associated data and shader variables
 class VaoData {
     vao;
@@ -244,17 +246,22 @@ function setup_position(gl, program, position_data, position_config){
 }
 
 // Set default shader uniform values
-function setup_default_params(gl, program){
-    let transform_z = -10;
-    let z_factor = 1200;
-    apply_vector(gl, program, [1, 1, 1, 1], "u_most_color");
-    apply_vector(gl, program, [0, 0, -z_factor + transform_z, 0], "u_furthest_point")
-    apply_vector(gl, program, [0, 0, transform_z, 0], "u_closest_point")
+function setup_repeated_default_params(gl, program){
+    let transform_z = 0;
+    let z_factor = 255;
     apply_vector(gl, program, matrix_util.create_transform(0, 0, transform_z), "u_transform")
     apply_matrix(gl, program, matrix_util.create_z_scaling(z_factor), "u_scaling")
-    apply_matrix(gl, program, matrix_util.create_perspective(0.3, gl.canvas.clientWidth/gl.canvas.clientHeight, 1, 1000), "u_perspective")
     apply_matrix(gl, program, matrix_util.create_rotation_y(0), "u_pre_rotation")
     apply_matrix(gl, program, matrix_util.create_rotation_y(0), "u_post_rotation")
+}
+function setup_once_default_params(gl, program){
+    let transform_z = 0;
+    let z_factor = 255;
+    apply_vector(gl, program, [Math.random(), Math.random(), Math.random(), 1], "u_most_color");
+    apply_vector(gl, program, [0, 0, -z_factor + transform_z, 0], "u_furthest_point")
+    apply_vector(gl, program, [0, 0, transform_z, 0], "u_closest_point")
+    apply_matrix(gl, program, matrix_util.create_perspective(2.6, gl.canvas.clientWidth/gl.canvas.clientHeight, 1, 1000), "u_perspective")
+
 }
 
 // Create vertices and indices of pipe
@@ -309,7 +316,7 @@ function apply_vector(gl, program, vector, uniform_location){
 function setup_draw(gl, program){
     resize_canvas(gl)
     clear_viewport(gl, program)
-    setup_default_params(gl, program)
+    setup_repeated_default_params(gl, program)
 
     let position_data, indices_data;
     let position_config = [
@@ -320,62 +327,60 @@ function setup_draw(gl, program){
         0,
     ];
 
-    [position_data, indices_data] = create_pipe_vertices_and_indices(100, 1);
-    let circle_1_params = [
-        new UniformParam(gl, program, "vec4", "u_most_color", new vec4([1, 0, 0, 1])),
+    let number_of_circles = 30;
+    let circles = [];
+    let circles_params = [
         new UniformParam(gl, program, "vec4", "u_transform", new vec4([0, 0, -10, 0])),
-        new UniformParam(gl, program, "mat4", "u_scaling", new mat4(matrix_util.create_z_scaling(50)))
-    ]
-    let circle_1 = new VaoData(gl.createVertexArray(), position_data, position_config, indices_data, circle_1_params);
-    append_pos_and_elem_to_vao(gl, program, circle_1.vao, circle_1.positions, circle_1.positions_config, circle_1.indices);
+        new UniformParam(gl, program, "mat4", "u_scaling", new mat4(matrix_util.create_z_scaling(0)))
+    ];
 
-    [position_data, indices_data] = create_pipe_vertices_and_indices(100, 2);
-    let circle_2_params = [
-        new UniformParam(gl, program, "vec4", "u_most_color", new vec4([0, 1, 0, 1])),
-        new UniformParam(gl, program, "vec4", "u_transform", new vec4([0, 0, -10, 0])),
-        new UniformParam(gl, program, "mat4", "u_scaling", new mat4(matrix_util.create_z_scaling(50)))
+    setup_once_default_params(gl, program)
 
-    ]
-    let circle_2 = new VaoData(gl.createVertexArray(), position_data, position_config, indices_data, circle_2_params);
-    append_pos_and_elem_to_vao(gl, program, circle_2.vao, circle_2.positions, circle_2.positions_config, circle_2.indices);
 
-    [position_data, indices_data] = create_pipe_vertices_and_indices(100, 3);
-    let circle_3_params = [
-        new UniformParam(gl, program, "vec4", "u_most_color", new vec4([0, 0, 1, 1])),
-        new UniformParam(gl, program, "vec4", "u_transform", new vec4([0, 0, -10, 0])),
-        new UniformParam(gl, program, "mat4", "u_scaling", new mat4(matrix_util.create_z_scaling(50)))
 
-    ]
-    let circle_3 = new VaoData(gl.createVertexArray(), position_data, position_config, indices_data, circle_3_params);
-    append_pos_and_elem_to_vao(gl, program, circle_3.vao, circle_3.positions, circle_3.positions_config, circle_3.indices);
+    for (let i = 0; i < number_of_circles; i++) {
+        let lod = 100;
+        [position_data, indices_data] = create_pipe_vertices_and_indices(lod, i**2 + 1.1**i);
+
+        circles.push(new VaoData(gl.createVertexArray(), position_data, position_config, indices_data, circles_params));
+        append_pos_and_elem_to_vao(gl, program, circles[i].vao, circles[i].positions, circles[i].positions_config, circles[i].indices);
+    }
 
     gl.useProgram(program)
 
-    return [program, [circle_1, circle_2, circle_3]]
+    return [program, circles]
+}
+
+function get_fps(){
+    let now = Date.now();
+    let fps = 1000 / (now - fps_temp)
+    fps_temp = now;
+    document.querySelector("#fps").textContent = fps;
 }
 
 // Drawing loop
 function draw(gl, program, vao_data, audio_analyzer){
-    let furthest_point = -1200
+    let furthest_point = -255;
     let z_factor, z_transform;
     let circle = 0
 
     for (let vao of vao_data) {
-        setup_default_params(gl, program);
+        setup_repeated_default_params(gl, program);
         vao.apply_params();
 
-        z_factor = audio_analyzer.get_sum_between_range(circle * 1000, (circle + 1) * 1000);
-        console.log(z_factor)
+
+        z_factor = audio_analyzer.get_altered_sum_between_range(circle * (6000/vao_data.length), (circle + 1) * (6000/vao_data.length))
         z_transform = furthest_point + z_factor;
 
-        circle++;
+        circle += 1;
 
-        vao.params[1].value.z = z_transform
-        vao.params[2].value.z3 = z_factor
+        vao.params[0].value.z = z_transform
+        vao.params[1].value.z3 = z_factor
 
         draw_vao(gl, program, vao.vao, vao.indices_length)
     }
 
+    get_fps()
     requestAnimationFrame(() => draw(gl, program, vao_data, audio_analyzer))
 }
 
