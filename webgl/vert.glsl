@@ -17,9 +17,6 @@ uniform mat4 u_post_rotation;
 out vec4 pos_color;
 
 vec4 color(vec4 position) {
-    vec4 min_value = vec4(0, 0, -20, 0);
-    vec4 max_value = vec4(0, 0, 0, 0);
-
     vec4 output_value = vec4(u_most_color.xyz, 1.0 - ((position.z - u_closest_point.z)/(u_furthest_point.z - u_closest_point)));
     return output_value;
 }
