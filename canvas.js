@@ -109,8 +109,110 @@ class mat4 {
 }
 
 // Util for creating matrices
-const matrix_util = {
-    create_perspective: function (fov, aspect, near, far) {
+class matrix_util {
+    static normalize(v){
+        let length = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+        if (length !== 0) {
+            return [v[0] / length, v[1] / length, v[2] / length];
+        } else {
+            return [0, 0, 0];
+        }
+    }
+    static subtract_vectors(v1, v2){
+        return [v1[0] - v2[0], v1[1] - v2[1], v1[2] - v2[2]];
+    }
+    static cross(v1, v2){
+        return [v1[1] * v2[2] - v1[2] * v2[1],
+            v1[2] * v2[0] - v1[0] * v2[2],
+            v1[0] * v2[1] - v1[1] * v2[0]];
+    }
+    static inverse(mat){
+        let dst = [];
+        let mat00 = mat[0];
+        let mat01 = mat[1];
+        let mat02 = mat[2];
+        let mat03 = mat[3];
+        let mat10 = mat[4];
+        let mat11 = mat[5];
+        let mat12 = mat[6];
+        let mat13 = mat[7];
+        let mat20 = mat[8];
+        let mat21 = mat[9];
+        let mat22 = mat[10];
+        let mat23 = mat[11];
+        let mat30 = mat[12];
+        let mat31 = mat[13];
+        let mat32 = mat[14];
+        let mat33 = mat[15];
+        let tmatp_0  = mat22 * mat33;
+        let tmatp_1  = mat32 * mat23;
+        let tmatp_2  = mat12 * mat33;
+        let tmatp_3  = mat32 * mat13;
+        let tmatp_4  = mat12 * mat23;
+        let tmatp_5  = mat22 * mat13;
+        let tmatp_6  = mat02 * mat33;
+        let tmatp_7  = mat32 * mat03;
+        let tmatp_8  = mat02 * mat23;
+        let tmatp_9  = mat22 * mat03;
+        let tmatp_10 = mat02 * mat13;
+        let tmatp_11 = mat12 * mat03;
+        let tmatp_12 = mat20 * mat31;
+        let tmatp_13 = mat30 * mat21;
+        let tmatp_14 = mat10 * mat31;
+        let tmatp_15 = mat30 * mat11;
+        let tmatp_16 = mat10 * mat21;
+        let tmatp_17 = mat20 * mat11;
+        let tmatp_18 = mat00 * mat31;
+        let tmatp_19 = mat30 * mat01;
+        let tmatp_20 = mat00 * mat21;
+        let tmatp_21 = mat20 * mat01;
+        let tmatp_22 = mat00 * mat11;
+        let tmatp_23 = mat10 * mat01;
+
+        let t0 = (tmatp_0 * mat11 + tmatp_3 * mat21 + tmatp_4 * mat31) -
+            (tmatp_1 * mat11 + tmatp_2 * mat21 + tmatp_5 * mat31);
+        let t1 = (tmatp_1 * mat01 + tmatp_6 * mat21 + tmatp_9 * mat31) -
+            (tmatp_0 * mat01 + tmatp_7 * mat21 + tmatp_8 * mat31);
+        let t2 = (tmatp_2 * mat01 + tmatp_7 * mat11 + tmatp_10 * mat31) -
+            (tmatp_3 * mat01 + tmatp_6 * mat11 + tmatp_11 * mat31);
+        let t3 = (tmatp_5 * mat01 + tmatp_8 * mat11 + tmatp_11 * mat21) -
+            (tmatp_4 * mat01 + tmatp_9 * mat11 + tmatp_10 * mat21);
+
+        let d = 1.0 / (mat00 * t0 + mat10 * t1 + mat20 * t2 + mat30 * t3);
+
+        dst[0] = d * t0;
+        dst[1] = d * t1;
+        dst[2] = d * t2;
+        dst[3] = d * t3;
+        dst[4] = d * ((tmatp_1 * mat10 + tmatp_2 * mat20 + tmatp_5 * mat30) -
+            (tmatp_0 * mat10 + tmatp_3 * mat20 + tmatp_4 * mat30));
+        dst[5] = d * ((tmatp_0 * mat00 + tmatp_7 * mat20 + tmatp_8 * mat30) -
+            (tmatp_1 * mat00 + tmatp_6 * mat20 + tmatp_9 * mat30));
+        dst[6] = d * ((tmatp_3 * mat00 + tmatp_6 * mat10 + tmatp_11 * mat30) -
+            (tmatp_2 * mat00 + tmatp_7 * mat10 + tmatp_10 * mat30));
+        dst[7] = d * ((tmatp_4 * mat00 + tmatp_9 * mat10 + tmatp_10 * mat20) -
+            (tmatp_5 * mat00 + tmatp_8 * mat10 + tmatp_11 * mat20));
+        dst[8] = d * ((tmatp_12 * mat13 + tmatp_15 * mat23 + tmatp_16 * mat33) -
+            (tmatp_13 * mat13 + tmatp_14 * mat23 + tmatp_17 * mat33));
+        dst[9] = d * ((tmatp_13 * mat03 + tmatp_18 * mat23 + tmatp_21 * mat33) -
+            (tmatp_12 * mat03 + tmatp_19 * mat23 + tmatp_20 * mat33));
+        dst[10] = d * ((tmatp_14 * mat03 + tmatp_19 * mat13 + tmatp_22 * mat33) -
+            (tmatp_15 * mat03 + tmatp_18 * mat13 + tmatp_23 * mat33));
+        dst[11] = d * ((tmatp_17 * mat03 + tmatp_20 * mat13 + tmatp_23 * mat23) -
+            (tmatp_16 * mat03 + tmatp_21 * mat13 + tmatp_22 * mat23));
+        dst[12] = d * ((tmatp_14 * mat22 + tmatp_17 * mat32 + tmatp_13 * mat12) -
+            (tmatp_16 * mat32 + tmatp_12 * mat12 + tmatp_15 * mat22));
+        dst[13] = d * ((tmatp_20 * mat32 + tmatp_12 * mat02 + tmatp_19 * mat22) -
+            (tmatp_18 * mat22 + tmatp_21 * mat32 + tmatp_13 * mat02));
+        dst[14] = d * ((tmatp_18 * mat12 + tmatp_23 * mat32 + tmatp_15 * mat02) -
+            (tmatp_22 * mat32 + tmatp_14 * mat02 + tmatp_19 * mat12));
+        dst[15] = d * ((tmatp_22 * mat22 + tmatp_16 * mat02 + tmatp_21 * mat12) -
+            (tmatp_20 * mat12 + tmatp_23 * mat22 + tmatp_17 * mat02));
+
+        return dst;
+    }
+
+    static create_perspective(fov, aspect, near, far) {
         let f = Math.tan(Math.PI * 0.5 - 0.5 * fov);
         let rangeInv = 1.0 / (near - far);
 
@@ -120,47 +222,63 @@ const matrix_util = {
             0, 0, (near + far) * rangeInv, -1,
             0, 0, near * far * rangeInv * 2, 0
         ];
-    },
-    create_z_scaling: function (z_factor){
+    }
+    static create_z_scaling(z_factor){
         return [
             1, 0, 0, 0,
             0, 1, 0 ,0,
             0, 0, 1*z_factor, 0,
             0, 0, 0, 1
         ]
-    },
-    create_transform: function (x, y, z){
+    }
+    static create_transform(x, y, z){
         return [
             x,
             y,
             z,
             1,
         ]
-    },
-    create_rotation_x: function (rad){
+    }
+    static create_rotation_x(rad){
         return [
             1, 0, 0, 0,
             0, Math.cos(rad), -Math.sin(rad), 0,
             0, Math.sin(rad), Math.cos(rad), 0,
             0, 0, 0, 1
         ];
-    },
-    create_rotation_y: function (rad){
+    }
+    static create_rotation_y(rad){
         return [
             Math.cos(rad), 0, Math.sin(rad), 0,
             0, 1, 0, 0,
             -Math.sin(rad), 0, Math.cos(rad), 0,
             0, 0, 0, 1
         ]
-    },
-    create_rotation_z: function (rad){
+    }
+    static create_rotation_z(rad){
         return [
             Math.cos(rad), -Math.sin(rad), 0, 0,
             Math.sin(rad), Math.cos(rad), 0, 0,
             0, 0, 1, 0,
             0, 0, 0, 1
         ]
-    },
+    }
+    static create_look_at(cameraPosition, target, up){
+        let zAxis = matrix_util.normalize(
+            matrix_util.subtract_vectors(cameraPosition, target));
+        let xAxis = matrix_util.normalize(matrix_util.cross(up, zAxis));
+        let yAxis = matrix_util.normalize(matrix_util.cross(zAxis, xAxis));
+
+        return this.inverse([
+            xAxis[0], xAxis[1], xAxis[2], 0,
+            yAxis[0], yAxis[1], yAxis[2], 0,
+            zAxis[0], zAxis[1], zAxis[2], 0,
+            cameraPosition[0],
+            cameraPosition[1],
+            cameraPosition[2],
+            1,
+        ]);
+    }
 }
 
 // Load and setup shaders
@@ -249,18 +367,20 @@ function setup_position(gl, program, position_data, position_config){
 function setup_repeated_default_params(gl, program){
     let transform_z = 0;
     let z_factor = 255;
+    let look_at_pos = [0, 0, 200]
     apply_vector(gl, program, matrix_util.create_transform(0, 0, transform_z), "u_transform")
     apply_matrix(gl, program, matrix_util.create_z_scaling(z_factor), "u_scaling")
-    apply_matrix(gl, program, matrix_util.create_rotation_y(0), "u_pre_rotation")
-    apply_matrix(gl, program, matrix_util.create_rotation_y(0), "u_post_rotation")
 }
 function setup_once_default_params(gl, program){
-    let transform_z = 0;
-    let z_factor = 255;
-    apply_vector(gl, program, [Math.random(), Math.random(), Math.random(), 1], "u_most_color");
+    let transform_z = -10;
+    let z_factor = 225*5;
+    let look_at_pos = [500, 0, 200]
+    apply_vector(gl, program, [1, Math.random(), Math.random(), 1], "u_most_color");
+    apply_vector(gl, program, [0, 0, 1, 0], "u_least_color");
     apply_vector(gl, program, [0, 0, -z_factor + transform_z, 0], "u_furthest_point")
     apply_vector(gl, program, [0, 0, transform_z, 0], "u_closest_point")
-    apply_matrix(gl, program, matrix_util.create_perspective(2.6, gl.canvas.clientWidth/gl.canvas.clientHeight, 1, 1000), "u_perspective")
+    apply_matrix(gl, program, matrix_util.create_perspective(1.6, gl.canvas.clientWidth/gl.canvas.clientHeight, 1, 10000), "u_perspective")
+    apply_matrix(gl, program, matrix_util.create_look_at(look_at_pos, [0, 0, -255], [0, 1, 0]), "u_look_at");
 
 }
 
@@ -327,7 +447,7 @@ function setup_draw(gl, program){
         0,
     ];
 
-    let number_of_circles = 30;
+    let number_of_circles = 80;
     let circles = [];
     let circles_params = [
         new UniformParam(gl, program, "vec4", "u_transform", new vec4([0, 0, -10, 0])),
@@ -340,7 +460,7 @@ function setup_draw(gl, program){
 
     for (let i = 0; i < number_of_circles; i++) {
         let lod = 100;
-        [position_data, indices_data] = create_pipe_vertices_and_indices(lod, i**2 + 1.1**i);
+        [position_data, indices_data] = create_pipe_vertices_and_indices(lod, i**1.5);
 
         circles.push(new VaoData(gl.createVertexArray(), position_data, position_config, indices_data, circles_params));
         append_pos_and_elem_to_vao(gl, program, circles[i].vao, circles[i].positions, circles[i].positions_config, circles[i].indices);
@@ -360,7 +480,7 @@ function get_fps(){
 
 // Drawing loop
 function draw(gl, program, vao_data, audio_analyzer){
-    let furthest_point = -255;
+    let furthest_point = -255*5;
     let z_factor, z_transform;
     let circle = 0
 
@@ -369,10 +489,10 @@ function draw(gl, program, vao_data, audio_analyzer){
         vao.apply_params();
 
 
-        z_factor = audio_analyzer.get_altered_sum_between_range(circle * (6000/vao_data.length), (circle + 1) * (6000/vao_data.length))
+        z_factor = audio_analyzer.get_altered_sum_between_range(circle * (12000/vao_data.length), (circle + 1) * (12000/vao_data.length)) * 5
         z_transform = furthest_point + z_factor;
 
-        circle += 1;
+        circle += 0.1;
 
         vao.params[0].value.z = z_transform
         vao.params[1].value.z3 = z_factor

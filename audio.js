@@ -59,6 +59,8 @@ export class AudioAnalyzer {
 
     get_altered_sum_between_range(min_freq, max_freq) {
         let data = this.get_audio_data();
+        min_freq = min_freq / 2;
+        max_freq = max_freq / 2;
         if(data !== undefined) {
             data = data.slice(min_freq, max_freq).filter((value, i, j) => {return value !== 0});
             let sum = data.reduce((partial, a) => partial + a, 0)
