@@ -341,14 +341,14 @@ class matrix_util {
 
 // Load and setup shaders
 async function get_vert_shader(){
-    let response = await fetch("http://localhost:8080/webgl/vert.glsl");
+    let response = await fetch("https://ghoster1cz.github.io/webgl_audio_visualizer/webgl/vert.glsl");
     const file = await response.text();
 
     return file;
 
 }
 async function get_frag_shader(){
-    let response = await fetch("http://localhost:8080/webgl/frag.glsl");
+    let response = await fetch("https://ghoster1cz.github.io/webgl_audio_visualizer/webgl/frag.glsl");
     const file = await response.text();
 
     return file;
