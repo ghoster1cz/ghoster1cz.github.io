@@ -50,6 +50,64 @@ class UniformParam {
     }
 }
 
+class DrawParams {
+    _number_of_circle = 100;
+    _least_color = [0, 1, 0, 0]
+    _most_color = [1, 0, 0, 1]
+    _look_at_pos = [1000, 0, 100]
+    _look_at_target = [0, 0, -300]
+    _look_at_up = [0, 0, 1]
+
+
+    get number_of_circle() {
+        return this._number_of_circle;
+    }
+
+    set number_of_circle(value) {
+        this._number_of_circle = value;
+    }
+
+    get least_color() {
+        return this._least_color;
+    }
+
+    set least_color(value) {
+        this._least_color = value;
+    }
+
+    get most_color() {
+        return this._most_color;
+    }
+
+    set most_color(value) {
+        this._most_color = value;
+    }
+
+    get look_at_pos() {
+        return this._look_at_pos;
+    }
+
+    set look_at_pos(value) {
+        this._look_at_pos = value;
+    }
+
+    get look_at_target() {
+        return this._look_at_target;
+    }
+
+    set look_at_target(value) {
+        this._look_at_target = value;
+    }
+
+    get look_at_up() {
+        return this._look_at_up;
+    }
+
+    set look_at_up(value) {
+        this._look_at_up = value;
+    }
+}
+
 class vec4 {
     x;
     y;
@@ -367,20 +425,19 @@ function setup_position(gl, program, position_data, position_config){
 function setup_repeated_default_params(gl, program){
     let transform_z = 0;
     let z_factor = 255;
-    let look_at_pos = [0, 0, 200]
     apply_vector(gl, program, matrix_util.create_transform(0, 0, transform_z), "u_transform")
     apply_matrix(gl, program, matrix_util.create_z_scaling(z_factor), "u_scaling")
 }
-function setup_once_default_params(gl, program){
+function setup_once_default_params(gl, program, draw_params){
     let transform_z = -10;
     let z_factor = 225*5;
-    let look_at_pos = [500, 0, 200]
-    apply_vector(gl, program, [1, Math.random(), Math.random(), 1], "u_most_color");
-    apply_vector(gl, program, [0, 0, 1, 0], "u_least_color");
+    let look_at_pos = [1000, 0, 100]
+    apply_vector(gl, program, draw_params.most_color, "u_most_color");
+    apply_vector(gl, program, draw_params.least_color, "u_least_color");
     apply_vector(gl, program, [0, 0, -z_factor + transform_z, 0], "u_furthest_point")
     apply_vector(gl, program, [0, 0, transform_z, 0], "u_closest_point")
     apply_matrix(gl, program, matrix_util.create_perspective(1.6, gl.canvas.clientWidth/gl.canvas.clientHeight, 1, 10000), "u_perspective")
-    apply_matrix(gl, program, matrix_util.create_look_at(look_at_pos, [0, 0, -255], [0, 1, 0]), "u_look_at");
+    apply_matrix(gl, program, matrix_util.create_look_at(draw_params.look_at_pos, draw_params.look_at_target, draw_params.look_at_up), "u_look_at");
 
 }
 
@@ -433,7 +490,7 @@ function apply_vector(gl, program, vector, uniform_location){
 }
 
 // Setup model, vaos, etc before calling drawing loop
-function setup_draw(gl, program){
+function setup_draw(gl, program, draw_params){
     resize_canvas(gl)
     clear_viewport(gl, program)
     setup_repeated_default_params(gl, program)
@@ -447,19 +504,20 @@ function setup_draw(gl, program){
         0,
     ];
 
-    let number_of_circles = 80;
+    let number_of_circles = 100;
     let circles = [];
     let circles_params = [
         new UniformParam(gl, program, "vec4", "u_transform", new vec4([0, 0, -10, 0])),
         new UniformParam(gl, program, "mat4", "u_scaling", new mat4(matrix_util.create_z_scaling(0)))
     ];
 
-    setup_once_default_params(gl, program)
+    setup_once_default_params(gl, program, draw_params)
 
 
 
     for (let i = 0; i < number_of_circles; i++) {
-        let lod = 100;
+        let lod = 80;
+        if(i < 50){lod -= i}
         [position_data, indices_data] = create_pipe_vertices_and_indices(lod, i**1.5);
 
         circles.push(new VaoData(gl.createVertexArray(), position_data, position_config, indices_data, circles_params));
@@ -478,7 +536,6 @@ function get_fps(){
     document.querySelector("#fps").textContent = fps;
 }
 
-// Drawing loop
 function draw(gl, program, vao_data, audio_analyzer){
     let furthest_point = -255*5;
     let z_factor, z_transform;
@@ -489,10 +546,10 @@ function draw(gl, program, vao_data, audio_analyzer){
         vao.apply_params();
 
 
-        z_factor = audio_analyzer.get_altered_sum_between_range(circle * (12000/vao_data.length), (circle + 1) * (12000/vao_data.length)) * 5
+        z_factor = audio_analyzer.get_altered_sum_between_range(circle * (25000/vao_data.length), (circle + 1) * (25000/vao_data.length)) * 5
         z_transform = furthest_point + z_factor;
 
-        circle += 0.1;
+        circle += 0.2;
 
         vao.params[0].value.z = z_transform
         vao.params[1].value.z3 = z_factor
@@ -503,18 +560,6 @@ function draw(gl, program, vao_data, audio_analyzer){
     get_fps()
     requestAnimationFrame(() => draw(gl, program, vao_data, audio_analyzer))
 }
+// Drawing loop
 
-// Get canvas and call setup_draw
-function main(){
-    let canvas = document.querySelector("#main-canvas");
-    let ctx = canvas.getContext("webgl2", {depth: true, antialias: true, premultipliedAlpha: false});
-
-    let analyzer = getAudioAnalyzer();
-    let program, vao_data;
-    setup_shader(ctx).then(program => {
-        [program, vao_data] = setup_draw(ctx, program);
-        draw(ctx, program, vao_data, analyzer)
-    });
-}
-
-main();
+export {DrawParams, setup_draw, setup_shader, draw};

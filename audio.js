@@ -20,7 +20,7 @@ export class AudioAnalyzer {
     setup_audio() {
         let file = this.audio_input.files[0];
         this.audio.src = URL.createObjectURL(file);
-        this.audio_input.hidden = true;
+        // this.audio_input.hidden = true;
         let audio_ctx = new window.AudioContext();
         this.audio.play();
 
