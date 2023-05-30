@@ -428,16 +428,16 @@ function setup_repeated_default_params(gl, program){
     apply_vector(gl, program, matrix_util.create_transform(0, 0, transform_z), "u_transform")
     apply_matrix(gl, program, matrix_util.create_z_scaling(z_factor), "u_scaling")
 }
-function setup_once_default_params(gl, program, draw_params){
+function setup_once_default_params(gl, program, canvas_render_settings, camera_settings){
     let transform_z = -10;
     let z_factor = 225*5;
-    let look_at_pos = [1000, 0, 100]
-    apply_vector(gl, program, draw_params.most_color, "u_most_color");
-    apply_vector(gl, program, draw_params.least_color, "u_least_color");
+
+    apply_vector(gl, program, canvas_render_settings.loud_color, "u_most_color");
+    apply_vector(gl, program, canvas_render_settings.silent_color, "u_least_color");
     apply_vector(gl, program, [0, 0, -z_factor + transform_z, 0], "u_furthest_point")
     apply_vector(gl, program, [0, 0, transform_z, 0], "u_closest_point")
     apply_matrix(gl, program, matrix_util.create_perspective(1.6, gl.canvas.clientWidth/gl.canvas.clientHeight, 1, 10000), "u_perspective")
-    apply_matrix(gl, program, matrix_util.create_look_at(draw_params.look_at_pos, draw_params.look_at_target, draw_params.look_at_up), "u_look_at");
+    apply_matrix(gl, program, matrix_util.create_look_at(camera_settings.camera_pos, camera_settings.look_at_pos, camera_settings.up_vector), "u_look_at");
 
 }
 
@@ -490,7 +490,7 @@ function apply_vector(gl, program, vector, uniform_location){
 }
 
 // Setup model, vaos, etc before calling drawing loop
-function setup_draw(gl, program, draw_params){
+function setup_draw(gl, program, canvas_render_settings, camera_settings){
     resize_canvas(gl)
     clear_viewport(gl, program)
     setup_repeated_default_params(gl, program)
@@ -504,20 +504,31 @@ function setup_draw(gl, program, draw_params){
         0,
     ];
 
-    let number_of_circles = 100;
+    let number_of_circles = canvas_render_settings.number_of_model;
     let circles = [];
     let circles_params = [
         new UniformParam(gl, program, "vec4", "u_transform", new vec4([0, 0, -10, 0])),
         new UniformParam(gl, program, "mat4", "u_scaling", new mat4(matrix_util.create_z_scaling(0)))
     ];
 
-    setup_once_default_params(gl, program, draw_params)
+    setup_once_default_params(gl, program, canvas_render_settings, camera_settings)
 
 
 
     for (let i = 0; i < number_of_circles; i++) {
-        let lod = 80;
-        if(i < 50){lod -= i}
+        let lod = 0;
+        if(canvas_render_settings.model == "circle") {
+            lod = 80;
+            if (i < 50) {
+                lod -= i
+            }
+        }
+        else if(canvas_render_settings.model == "square") {
+            lod = 4;
+        }
+        else if(canvas_render_settings.model == "triangle"){
+            lod = 3;
+        }
         [position_data, indices_data] = create_pipe_vertices_and_indices(lod, i**1.5);
 
         circles.push(new VaoData(gl.createVertexArray(), position_data, position_config, indices_data, circles_params));
@@ -533,10 +544,10 @@ function get_fps(){
     let now = Date.now();
     let fps = 1000 / (now - fps_temp)
     fps_temp = now;
-    document.querySelector("#fps").textContent = fps;
+    document.querySelector("#fps").textContent = Math.round(fps);
 }
 
-function draw(gl, program, vao_data, audio_analyzer){
+function draw(gl, program, vao_data, audio_analyzer, animation_id){
     let furthest_point = -255*5;
     let z_factor, z_transform;
     let circle = 0
@@ -546,10 +557,11 @@ function draw(gl, program, vao_data, audio_analyzer){
         vao.apply_params();
 
 
-        z_factor = audio_analyzer.get_altered_sum_between_range(circle * (25000/vao_data.length), (circle + 1) * (25000/vao_data.length)) * 5
+        z_factor = audio_analyzer.get_sum(circle)
+        z_factor *= 5
         z_transform = furthest_point + z_factor;
 
-        circle += 0.2;
+        circle += 1;
 
         vao.params[0].value.z = z_transform
         vao.params[1].value.z3 = z_factor
@@ -558,7 +570,7 @@ function draw(gl, program, vao_data, audio_analyzer){
     }
 
     get_fps()
-    requestAnimationFrame(() => draw(gl, program, vao_data, audio_analyzer))
+    animation_id[0] = requestAnimationFrame(() => draw(gl, program, vao_data, audio_analyzer, animation_id))
 }
 // Drawing loop
 

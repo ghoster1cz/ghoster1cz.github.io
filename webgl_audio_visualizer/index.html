@@ -5,14 +5,238 @@
     <title>Audiovisualiser</title>
 
     <link rel="stylesheet" href="style.css">
-    <script defer type="module" src="audio.js"></script>
-    <script defer type="module" src="canvas.js"></script>
-    <script defer type="module" src="script.js"></script>
+    <script type="module" src="audio.js"></script>
+    <script type="module" src="canvas.js"></script>
+    <script type="module" src="script.js"></script>
 </head>
 <body>
     <canvas id="main-canvas"></canvas>
-    <audio id="audio" controls></audio>
-    <input id="song-input" type="file" accept="audio/*">
-    <p>fps: <p id="fps"></p></p>
+    <section id="visualizer controls" class="render-settings">
+        <p>Visualizer controls
+            <svg class="svg-arrow" style="stroke: black; stroke-width: 2px;">
+                <line x1="0" y1="0" x2="5" y2="5"></line>
+                <line x1="5" y1="5" x2="0" y2="10"></line>
+            </svg>
+        </p>
+        <div class="dropdown-container">
+            <span class="flexbox-item-container">
+                <span class="flexbox-item">
+                    <span class="setting-input-wrapper">
+                        <label for="song-input">Song</label>
+                        <input id="song-input" type="file" accept="audio/*">
+                    </span>
+                </span>
+            </span>
+            <span class="flexbox-item-container">
+                <span class="flexbox-item">
+                    <span class="setting-input-wrapper">
+                        <audio id="audio" controls></audio>
+                    </span>
+                </span>
+            </span>
+            <span class="flexbox-item-container">
+                <span class="flexbox-item">
+                    <label for="fps">fps</label>
+                    <span id="fps"></span>
+                </span>
+            </span>
+            <span class="flexbox-item-container">
+                <span class="flexbox-item">
+                    <label for="apply-settings">Apply settings</label>
+                    <input id="apply-settings" type="button" value="apply settings">
+                </span>
+            </span>
+        </div>
+    </section>
+    <section id="canvas-render-settings" class="render-settings">
+        <p>Render settings
+            <svg class="svg-arrow" style="stroke: black; stroke-width: 2px;">
+                <line x1="0" y1="0" x2="5" y2="5"></line>
+                <line x1="5" y1="5" x2="0" y2="10"></line>
+            </svg>
+        </p>
+        <div class="dropdown-container">
+            <span class="flexbox-item-container">
+                <span class="flexbox-item">
+                    <span class="setting-input-wrapper">
+                        <label for="model-input-circle">Circle model</label>
+                        <input id="model-input-circle" name="render-model" type="radio" value="circle" checked>
+                    </span>
+                    <span class="setting-input-wrapper">
+                        <label for="model-input-square">Square model</label>
+                        <input id="model-input-square" name="render-model" type="radio" value="square">
+                    </span>
+                    <span class="setting-input-wrapper">
+                        <label for="model-input-triangle">Triangle model</label>
+                        <input id="model-input-triangle" name="render-model" type="radio" value="triangle">
+                    </span>
+                </span>
+            </span>
+            <span class="flexbox-item-container">
+                <span class="flexbox-item">
+                    <span class="setting-input-wrapper">
+                        <label for="number-of-models">Number of models</label>
+                        <input id="number-of-models" type="number" min="1" max="1000" value="100">
+                    </span>
+                </span>
+            </span>
+
+            <span class="flexbox-item-container">
+                <span class="flexbox-item">
+                    <span class="setting-input-wrapper">
+                        <label for="silence-color-r">Silence color Red</label>
+                        <input id="silence-color-r" type="number" min="0" max="1" step="0.01" value="1">
+                    </span>
+                    <span class="setting-input-wrapper">
+                        <label for="silence-color-g">Silence color Green</label>
+                        <input id="silence-color-g" type="number" min="0" max="1" step="0.01" value="0">
+                    </span>
+                    <span class="setting-input-wrapper">
+                        <label for="silence-color-b">Silence color Blue</label>
+                        <input id="silence-color-b" type="number" min="0" max="1" step="0.01" value="0">
+                    </span>
+                    <span class="setting-input-wrapper">
+                        <label for="silence-color-a">Silence color Alpha</label>
+                        <input id="silence-color-a" type="number" min="0" max="1" step="0.01" value="0">
+                    </span>
+                </span>
+            </span>
+
+            <span class="flexbox-item-container">
+                <span class="flexbox-item">
+                    <span class="setting-input-wrapper">
+                        <label for="loud-color-r">Loud color Red</label>
+                        <input id="loud-color-r" type="number" min="0" max="1" step="0.01" value="0">
+                    </span>
+                    <span class="setting-input-wrapper">
+                        <label for="loud-color-g">Loud color Green</label>
+                        <input id="loud-color-g" type="number" min="0" max="1" step="0.01" value="1">
+                    </span>
+                    <span class="setting-input-wrapper">
+                        <label for="loud-color-b">Loud color Blue</label>
+                        <input id="loud-color-b" type="number" min="0" max="1" step="0.01" value="0">
+                    </span>
+                    <span class="setting-input-wrapper">
+                        <label for="loud-color-a">Loud color Alpha</label>
+                        <input id="loud-color-a" type="number" min="0" max="1" step="0.01" value="1">
+                    </span>
+                </span>
+            </span>
+        </div>
+    </section>
+    <section id="audio-settings" class="render-settings">
+        <p>Audio parameters<svg class="svg-arrow" style="stroke: black; stroke-width: 2px;">
+            <line x1="0" y1="0" x2="5" y2="5"></line>
+            <line x1="5" y1="5" x2="0" y2="10"></line>
+        </svg></p>
+        <div class="dropdown-container">
+            <span class="flexbox-item-container">
+                <span class="flexbox-item">
+                    <span class="setting-input-wrapper">
+                        <label for="freq-range-min">Frequency range minimum</label>
+                        <input id="freq-range-min" type="number" min="0" max="20000" value="0">
+                    </span>
+                    <span class="setting-input-wrapper">
+                        <label for="freq-range-max">Frequency range maximum</label>
+                        <input id="freq-range-max" type="number" min="0" max="20000" value="4000">
+                    </span>
+                </span>
+            </span>
+
+            <span class="flexbox-item-container">
+                <span class="flexbox-item">
+                    <span class="setting-input-wrapper">
+                        <label for="freq-interval">Frequency interval</label>
+                        <input id="freq-interval" type="number" min="1" max="10000" value="160">
+                    </span>
+
+                    <span class="setting-input-wrapper">
+                        <label for="auto-freq-range">Use auto frequency interval</label>
+                        <input id="auto-freq-range" type="checkbox" checked>
+                    </span>
+                </span>
+            </span>
+
+            <span class="flexbox-item-container">
+                <span class="flexbox-item">
+                    <span class="setting-input-wrapper">
+                        <label for="freq-blending">Frequency blending</label>
+                        <input id="freq-blending" type="number" min="-1000" max="1000" value="5">
+                    </span>
+                </span>
+            </span>
+
+            <span class="flexbox-item-container">
+                <span class="flexbox-item">
+                    <span class="setting-input-wrapper">
+                        <label for="use-altered-sum-method">Use True sum method</label>
+                        <input id="use-true-sum-method" name="sum-method" type="radio" value="true-sum">
+                    </span>
+                    <span class="setting-input-wrapper">
+                        <label for="use-altered-sum-method">Use Altered sum method</label>
+                        <input id="use-altered-sum-method" name="sum-method" type="radio" value="altered-sum"  checked>
+                    </span>
+                </span>
+            </span>
+        </div>
+    </section>
+    <section id="camera-settings" class="render-settings">
+        <p>Camera settings<svg class="svg-arrow" style="stroke: black; stroke-width: 2px;">
+            <line x1="0" y1="0" x2="5" y2="5"></line>
+            <line x1="5" y1="5" x2="0" y2="10"></line>
+        </svg></p>
+        <div class="dropdown-container">
+            <span class="flexbox-item-container">
+                <span class="flexbox-item">
+                    <span class="setting-input-wrapper">
+                        <label for="camera-pos-x">Camera position x</label>
+                        <input id="camera-pos-x" type="number" min="-10000" max="10000" value="1000">
+                    </span>
+                    <span class="setting-input-wrapper">
+                        <label for="camera-pos-y">Camera position y</label>
+                        <input id="camera-pos-y" type="number" min="-10000" max="10000" value="0">
+                    </span>
+                    <span class="setting-input-wrapper">
+                        <label for="camera-pos-z">Camera position z</label>
+                        <input id="camera-pos-z" type="number" min="-10000" max="10000" value="100">
+                    </span>
+                </span>
+            </span>
+
+            <span class="flexbox-item-container">
+                <span class="flexbox-item">
+                    <span class="setting-input-wrapper">
+                        <label for="camera-look-x">Look at point x</label>
+                        <input id="camera-look-x" type="number" min="-10000" max="10000" value="0">
+                    </span>
+                    <span class="setting-input-wrapper">
+                        <label for="camera-look-y">Look at point y</label>
+                        <input id="camera-look-y" type="number" min="-10000" max="10000" value="0">
+                    </span>
+                    <span class="setting-input-wrapper">
+                        <label for="camera-look-z">Look at point z</label>
+                        <input id="camera-look-z" type="number" min="-10000" max="10000" value="-300">
+                    </span>
+                </span>
+            </span>
+
+            <span class="flexbox-item-container">
+                <span class="flexbox-item">
+                    <span class="setting-input-wrapper">
+                        <label for="up-vector-x">Up vector x</label>
+                        <input id="up-vector-x" type="number" min="-1" max="1" value="0">
+                    </span>
+                    <span class="setting-input-wrapper">
+                        <label for="up-vector-y">Up vector y</label>
+                        <input id="up-vector-y" type="number" min="-1" max="1" value="0">
+                    </span>
+                    <span class="setting-input-wrapper">
+                        <label for="up-vector-z">Up vector z</label>
+                        <input id="up-vector-z" type="number" min="-1" max="1" value="1">
+                    </span>
+                </span>
+            </span>
+        </div>
+    </section>
 </body>
 </html>
