@@ -35,7 +35,7 @@ p {
 section.render-settings {
     margin: 2px 0;
     width: 100%;
-    display: inline-flex;
+    display: flex;
     flex-flow: column wrap;
     gap: 2%;
 }
@@ -64,6 +64,9 @@ section.checked-settings p > svg{
 section.render-settings .dropdown-container{
     background-color: rgba(255, 165, 0, 0.9);
     display: none;
+    align-content: center;
+    padding-top: 1vh;
+    padding-bottom: 1vh;
 }
 
 section.checked-settings .dropdown-container{
@@ -94,7 +97,7 @@ section.checked-settings .dropdown-container{
     flex-basis: 16%;
     /*align-content: center;*/
 
-    height: min-content;
+    height: max-content;
 
 }
 
@@ -108,7 +111,7 @@ section.checked-settings .dropdown-container{
     flex-flow: column wrap;
     /*justify-content: center;*/
 
-    height: min-content;
+    height: max-content;
 
     border-radius: 5px;
 
