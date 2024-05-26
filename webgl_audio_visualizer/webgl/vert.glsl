@@ -19,7 +19,7 @@ out vec4 pos_color;
 vec4 color(vec4 position) {
     vec4 output_value = vec4(0,0,0,0);
 
-    output_value = u_least_color + (u_most_color * (1.0 + ((position.z - u_closest_point.z)/(u_furthest_point.z - u_closest_point.z))));
+    output_value = u_least_color + (u_most_color * (1.0 - ((position.z - u_closest_point.z)/(u_furthest_point.z - u_closest_point.z))));
 
     return output_value;
 }
