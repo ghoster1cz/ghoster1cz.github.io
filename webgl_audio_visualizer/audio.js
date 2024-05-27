@@ -79,8 +79,8 @@ export class AudioAnalyzer {
         }
 
         let max_freq = this.audio_settings.min_freq + ((iteration+1)*this.audio_settings.freq_interval);
-        if(max_freq > this.audio_settings.min_freq + this.audio_settings.freq_blending){
-            max_freq -= this.audio_settings.freq_blending
+        if(max_freq < this.audio_settings.max_freq - this.audio_settings.freq_blending){
+            max_freq += this.audio_settings.freq_blending
         }
         if(max_freq > this.audio_settings.max_freq){
             max_freq = this.audio_settings.max_freq;
